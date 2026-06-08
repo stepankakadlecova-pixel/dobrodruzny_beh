@@ -249,7 +249,7 @@ music.addEventListener("ended", () => {
     let isJumping = false;
     let playerBottom = 18;
     let velocity = 0;
-    let gameSpeed = window.innerWidth < 700 ? 5 : 3.5;
+    let gameSpeed = window.innerWidth < 700 ? 5 : 2.5;
 
     let spawnTimer = null;
     let countdownTimer = null;
@@ -409,7 +409,7 @@ music.play().catch(() => {});
     function checkCollision(a, b) {
       const r1 = a.getBoundingClientRect();
       const r2 = b.getBoundingClientRect();
-      const padding = 18;
+      const padding = window.innerWidth < 700 ? 18 : 32;
 
       return !(
         r1.right - padding < r2.left + padding ||
