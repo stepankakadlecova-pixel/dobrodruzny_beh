@@ -3,10 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Běh malého dobrodruha</title>
+  <title>Stopařská akademie</title>
 
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     body {
       overflow: hidden;
@@ -25,99 +29,154 @@
       background-position: center bottom;
     }
 
+    #logoSmall {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: min(22vw, 180px);
+      z-index: 12;
+      background: rgba(255,255,255,0.55);
+      border-radius: 12px;
+      padding: 6px;
+    }
+
     #hud {
       position: absolute;
       top: 16px;
       left: 16px;
       z-index: 10;
       display: flex;
-      gap: 12px;
+      gap: 10px;
       flex-wrap: wrap;
+      max-width: 65vw;
     }
 
     .hud-box {
-      font-size: clamp(18px, 3vw, 30px);
+      font-size: clamp(16px, 3vw, 28px);
       font-weight: bold;
       color: #111;
-      background: rgba(255,255,255,0.8);
-      padding: 8px 14px;
+      background: rgba(255,255,255,0.82);
+      padding: 8px 12px;
       border-radius: 12px;
+      border: 2px solid rgba(0,0,0,0.15);
     }
 
     #player {
       position: absolute;
-      left: 10vw;
+      left: 9vw;
       bottom: 18vh;
       width: clamp(90px, 14vw, 150px);
       z-index: 5;
     }
 
-    .item, .obstacle {
+    .item,
+    .obstacle {
       position: absolute;
-      width: clamp(52px, 8vw, 80px);
+      width: clamp(55px, 8vw, 85px);
       z-index: 4;
     }
 
-    .item { bottom: 42vh; }
-    .obstacle { bottom: 19vh; }
+    .item {
+      bottom: 42vh;
+    }
 
-    #startScreen, #endScreen {
+    .obstacle {
+      bottom: 19vh;
+    }
+
+    #startScreen,
+    #endScreen {
       position: absolute;
       inset: 0;
       z-index: 30;
-      background: rgba(255,255,255,0.82);
+      background: rgba(255,255,255,0.84);
       display: flex;
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 30px;
+      padding: 24px;
     }
 
     .panel {
-      max-width: 650px;
+      max-width: 700px;
+      width: min(92vw, 700px);
       background: white;
       border: 4px solid #111;
       border-radius: 24px;
-      padding: 28px;
+      padding: 26px;
       box-shadow: 0 8px 0 rgba(0,0,0,0.25);
+      pointer-events: auto;
+    }
+
+    .startLogo {
+      width: min(70vw, 430px);
+      margin-bottom: 14px;
     }
 
     h1 {
-      font-size: clamp(32px, 7vw, 58px);
-      margin-bottom: 18px;
+      font-size: clamp(30px, 6vw, 56px);
+      margin-bottom: 16px;
       color: #f26a13;
       -webkit-text-stroke: 1px #111;
     }
 
     p {
-      font-size: clamp(20px, 4vw, 30px);
+      font-size: clamp(19px, 4vw, 30px);
       line-height: 1.35;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       font-weight: bold;
     }
 
     button {
       font-size: clamp(22px, 4vw, 34px);
       font-weight: bold;
-      padding: 14px 28px;
+      padding: 14px 30px;
       border: 3px solid #111;
       border-radius: 18px;
       background: #f26a13;
       color: white;
       cursor: pointer;
       box-shadow: 0 5px 0 #111;
+      pointer-events: auto;
     }
 
-    .hidden { display: none !important; }
+    button:active {
+      transform: translateY(4px);
+      box-shadow: 0 1px 0 #111;
+    }
 
-}
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 700px) {
+      #logoSmall {
+        width: 130px;
+        top: auto;
+        bottom: 12px;
+        right: 12px;
+      }
+
+      #hud {
+        max-width: 75vw;
+      }
+
+      .item {
+        bottom: 41vh;
+      }
+    }
   </style>
-  
 </head>
 
 <body>
   <div id="game">
-<img id="logo" src="logo.png" alt="Pro malé dobrodruhy">
+
+    <audio id="bgMusic" loop>
+      <source src="hudba.mp3" type="audio/mpeg">
+    </audio>
+
+    <img id="logoSmall" src="logo.png" alt="Pro malé dobrodruhy">
+
     <div id="hud">
       <div class="hud-box" id="scoreText">Skóre: 0</div>
       <div class="hud-box" id="timeText">Čas: 60</div>
@@ -128,23 +187,29 @@
 
     <div id="startScreen">
       <div class="panel">
-        <h1>Běh malého dobrodruha</h1>
+        <img class="startLogo" src="logo.png" alt="Pro malé dobrodruhy">
+
         <p>
           Pochytej si věci, které potřebuješ na výpravu,<br>
           a vyhni se překážkám!
         </p>
-        <p> Máš 60 sekund.</p>
+
+        <p>⏱️ Máš 60 sekund.</p>
         <p id="mainRecord">Rekord: 0</p>
-        <button id="startButton">Start</button>
+
+        <button id="startButton" type="button">START</button>
       </div>
     </div>
 
     <div id="endScreen" class="hidden">
       <div class="panel">
+        <img class="startLogo" src="logo.png" alt="Pro malé dobrodruhy">
+
         <h1>Konec výpravy!</h1>
         <p id="finalScore">Skóre: 0</p>
         <p id="finalRecord">Rekord: 0</p>
-        <button id="restartButton">Hrát znovu</button>
+
+        <button id="restartButton" type="button">HRÁT ZNOVU</button>
       </div>
     </div>
 
@@ -153,6 +218,7 @@
   <script>
     const game = document.getElementById("game");
     const player = document.getElementById("player");
+    const music = document.getElementById("bgMusic");
 
     const scoreText = document.getElementById("scoreText");
     const timeText = document.getElementById("timeText");
@@ -161,6 +227,7 @@
 
     const startScreen = document.getElementById("startScreen");
     const endScreen = document.getElementById("endScreen");
+
     const finalScore = document.getElementById("finalScore");
     const finalRecord = document.getElementById("finalRecord");
 
@@ -176,13 +243,18 @@
     let playerBottom = 18;
     let velocity = 0;
     let gameSpeed = 5;
-    let spawnTimer;
-    let countdownTimer;
 
-    const gravity = 0,8;
-    const jumpPower = 9;
+    let spawnTimer = null;
+    let countdownTimer = null;
+    let animationFrame = null;
 
-    const runImages = ["player-beh1.png", "player-beh2.png"];
+    const gravity = 0.35;
+    const jumpPower = 11;
+
+    const runImages = [
+      "player-beh1.png",
+      "player-beh2.png"
+    ];
 
     const collectImages = [
       "kompas.png",
@@ -220,6 +292,7 @@
       isGameRunning = true;
       isJumping = false;
       playerBottom = 18;
+      velocity = 0;
 
       scoreText.textContent = "Skóre: 0";
       timeText.textContent = "Čas: 60";
@@ -232,10 +305,20 @@
       startScreen.classList.add("hidden");
       endScreen.classList.add("hidden");
 
+      clearTimeout(spawnTimer);
+      clearInterval(countdownTimer);
+      cancelAnimationFrame(animationFrame);
+
+      music.currentTime = 0;
+      music.volume = 0.35;
+      music.play().catch(() => {});
+
       spawnObjects();
       gameLoop();
 
       countdownTimer = setInterval(() => {
+        if (!isGameRunning) return;
+
         timeLeft--;
         timeText.textContent = "Čas: " + timeLeft;
 
@@ -275,8 +358,9 @@
         left -= gameSpeed;
         obj.style.left = left + "px";
 
-        if (left < -150) {
+        if (left < -160) {
           obj.remove();
+          return;
         }
 
         if (checkCollision(player, obj)) {
@@ -291,7 +375,7 @@
         }
       });
 
-      requestAnimationFrame(gameLoop);
+      animationFrame = requestAnimationFrame(gameLoop);
     }
 
     function spawnObjects() {
@@ -311,14 +395,14 @@
       img.style.left = window.innerWidth + "px";
       game.appendChild(img);
 
-      const delay = Math.random() * 1200 + 900;
+      const delay = Math.random() * 1200 + 850;
       spawnTimer = setTimeout(spawnObjects, delay);
     }
 
     function checkCollision(a, b) {
       const r1 = a.getBoundingClientRect();
       const r2 = b.getBoundingClientRect();
-      const padding = 15;
+      const padding = 18;
 
       return !(
         r1.right - padding < r2.left + padding ||
@@ -330,10 +414,15 @@
 
     function finishGame() {
       isGameRunning = false;
+
       clearTimeout(spawnTimer);
       clearInterval(countdownTimer);
+      cancelAnimationFrame(animationFrame);
 
       document.querySelectorAll(".item, .obstacle").forEach(obj => obj.remove());
+
+      music.pause();
+      music.currentTime = 0;
 
       if (score > record) {
         record = score;
@@ -369,22 +458,35 @@
       }
     });
 
-    game.addEventListener("click", () => {
+    game.addEventListener("click", e => {
+      if (e.target.tagName === "BUTTON") return;
+
       if (!startScreen.classList.contains("hidden")) return;
       if (!endScreen.classList.contains("hidden")) return;
+
       jump();
     });
 
     game.addEventListener("touchstart", e => {
+      if (e.target.tagName === "BUTTON") return;
+
       e.preventDefault();
 
       if (!startScreen.classList.contains("hidden")) return;
       if (!endScreen.classList.contains("hidden")) return;
+
       jump();
+    }, { passive: false });
+
+    startButton.addEventListener("click", e => {
+      e.stopPropagation();
+      startGame();
     });
 
-    startButton.addEventListener("click", startGame);
-    restartButton.addEventListener("click", startGame);
+    restartButton.addEventListener("click", e => {
+      e.stopPropagation();
+      startGame();
+    });
   </script>
 </body>
 </html>
