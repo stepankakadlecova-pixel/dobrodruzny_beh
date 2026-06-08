@@ -428,8 +428,7 @@ music.play().catch(() => {});
 
       document.querySelectorAll(".item, .obstacle").forEach(obj => obj.remove());
 
-      music.pause();
-      music.currentTime = 0;
+      
 
       if (score > record) {
         record = score;
