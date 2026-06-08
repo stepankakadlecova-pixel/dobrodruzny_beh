@@ -3,14 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dobrodružný běh</title>
+  <title>Stopařská akademie</title>
 
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       overflow: hidden;
@@ -29,15 +25,21 @@
       background-position: center bottom;
     }
 
-    #score {
+    #hud {
       position: absolute;
       top: 16px;
       left: 16px;
       z-index: 10;
-      font-size: clamp(22px, 4vw, 38px);
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .hud-box {
+      font-size: clamp(18px, 3vw, 30px);
       font-weight: bold;
       color: #111;
-      background: rgba(255,255,255,0.75);
+      background: rgba(255,255,255,0.8);
       padding: 8px 14px;
       border-radius: 12px;
     }
@@ -50,75 +52,134 @@
       z-index: 5;
     }
 
-    .item,
-    .obstacle {
+    .item, .obstacle {
       position: absolute;
       width: clamp(52px, 8vw, 80px);
       z-index: 4;
     }
 
-    .item {
-      bottom: 42vh;
-    }
+    .item { bottom: 42vh; }
+    .obstacle { bottom: 19vh; }
 
-    .obstacle {
-      bottom: 19vh;
-    }
-
-    #message {
+    #startScreen, #endScreen {
       position: absolute;
       inset: 0;
-      z-index: 20;
+      z-index: 30;
+      background: rgba(255,255,255,0.82);
       display: flex;
       align-items: center;
       justify-content: center;
       text-align: center;
-      background: rgba(255,255,255,0.78);
-      font-size: clamp(24px, 5vw, 44px);
-      font-weight: bold;
       padding: 30px;
-      line-height: 1.3;
     }
 
-    .hidden {
-      display: none !important;
+    .panel {
+      max-width: 650px;
+      background: white;
+      border: 4px solid #111;
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: 0 8px 0 rgba(0,0,0,0.25);
     }
+
+    h1 {
+      font-size: clamp(32px, 7vw, 58px);
+      margin-bottom: 18px;
+      color: #f26a13;
+      -webkit-text-stroke: 1px #111;
+    }
+
+    p {
+      font-size: clamp(20px, 4vw, 30px);
+      line-height: 1.35;
+      margin-bottom: 20px;
+      font-weight: bold;
+    }
+
+    button {
+      font-size: clamp(22px, 4vw, 34px);
+      font-weight: bold;
+      padding: 14px 28px;
+      border: 3px solid #111;
+      border-radius: 18px;
+      background: #f26a13;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 5px 0 #111;
+    }
+
+    .hidden { display: none !important; }
   </style>
 </head>
 
 <body>
   <div id="game">
-    <div id="score">Body: 0</div>
+
+    <div id="hud">
+      <div class="hud-box" id="scoreText">Skóre: 0</div>
+      <div class="hud-box" id="timeText">Čas: 60</div>
+      <div class="hud-box" id="recordText">Rekord: 0</div>
+    </div>
 
     <img id="player" src="player-stoji.png" alt="Dobrodruh">
 
-    <div id="message">
-      Klikni nebo zmáčkni mezerník<br>
-      a vyraz na výpravu!
+    <div id="startScreen">
+      <div class="panel">
+        <h1>Stopařská akademie</h1>
+        <p>
+          Pochytej si věci, které potřebuješ na výpravu,<br>
+          a vyhni se překážkám!
+        </p>
+        <p>⏱️ Máš 60 sekund.</p>
+        <p id="mainRecord">Rekord: 0</p>
+        <button id="startButton">Start</button>
+      </div>
     </div>
+
+    <div id="endScreen" class="hidden">
+      <div class="panel">
+        <h1>Konec výpravy!</h1>
+        <p id="finalScore">Skóre: 0</p>
+        <p id="finalRecord">Rekord: 0</p>
+        <button id="restartButton">Hrát znovu</button>
+      </div>
+    </div>
+
   </div>
 
   <script>
     const game = document.getElementById("game");
     const player = document.getElementById("player");
-    const scoreText = document.getElementById("score");
-    const message = document.getElementById("message");
+
+    const scoreText = document.getElementById("scoreText");
+    const timeText = document.getElementById("timeText");
+    const recordText = document.getElementById("recordText");
+    const mainRecord = document.getElementById("mainRecord");
+
+    const startScreen = document.getElementById("startScreen");
+    const endScreen = document.getElementById("endScreen");
+    const finalScore = document.getElementById("finalScore");
+    const finalRecord = document.getElementById("finalRecord");
+
+    const startButton = document.getElementById("startButton");
+    const restartButton = document.getElementById("restartButton");
 
     let score = 0;
+    let timeLeft = 60;
+    let record = Number(localStorage.getItem("stoparskaAkademieRecord")) || 0;
+
     let isGameRunning = false;
     let isJumping = false;
     let playerBottom = 18;
     let velocity = 0;
     let gameSpeed = 5;
     let spawnTimer;
+    let countdownTimer;
 
     const gravity = 0.9;
-    const jumpPower = 18;
+    const jumpPower = 13;
 
-    const runImages = [
-      "player-beh1.png",
-      "player-beh2.png"
-    ];
+    const runImages = ["player-beh1.png", "player-beh2.png"];
 
     const collectImages = [
       "kompas.png",
@@ -143,20 +204,47 @@
       "skala.png"
     ];
 
+    updateRecordTexts();
+
+    function updateRecordTexts() {
+      recordText.textContent = "Rekord: " + record;
+      mainRecord.textContent = "Rekord: " + record;
+    }
+
     function startGame() {
-      if (!isGameRunning) {
-        isGameRunning = true;
-        message.classList.add("hidden");
-        score = 0;
-        scoreText.textContent = "Body: 0";
-        spawnObjects();
-        gameLoop();
-      } else {
-        jump();
-      }
+      score = 0;
+      timeLeft = 60;
+      isGameRunning = true;
+      isJumping = false;
+      playerBottom = 18;
+
+      scoreText.textContent = "Skóre: 0";
+      timeText.textContent = "Čas: 60";
+
+      player.src = "player-stoji.png";
+      player.style.bottom = "18vh";
+
+      document.querySelectorAll(".item, .obstacle").forEach(obj => obj.remove());
+
+      startScreen.classList.add("hidden");
+      endScreen.classList.add("hidden");
+
+      spawnObjects();
+      gameLoop();
+
+      countdownTimer = setInterval(() => {
+        timeLeft--;
+        timeText.textContent = "Čas: " + timeLeft;
+
+        if (timeLeft <= 0) {
+          finishGame();
+        }
+      }, 1000);
     }
 
     function jump() {
+      if (!isGameRunning) return;
+
       if (!isJumping) {
         isJumping = true;
         velocity = jumpPower;
@@ -195,7 +283,7 @@
             score -= 5;
           }
 
-          scoreText.textContent = "Body: " + score;
+          scoreText.textContent = "Skóre: " + score;
           obj.remove();
         }
       });
@@ -227,7 +315,6 @@
     function checkCollision(a, b) {
       const r1 = a.getBoundingClientRect();
       const r2 = b.getBoundingClientRect();
-
       const padding = 15;
 
       return !(
@@ -236,6 +323,27 @@
         r1.bottom - padding < r2.top + padding ||
         r1.top + padding > r2.bottom - padding
       );
+    }
+
+    function finishGame() {
+      isGameRunning = false;
+      clearTimeout(spawnTimer);
+      clearInterval(countdownTimer);
+
+      document.querySelectorAll(".item, .obstacle").forEach(obj => obj.remove());
+
+      if (score > record) {
+        record = score;
+        localStorage.setItem("stoparskaAkademieRecord", record);
+      }
+
+      updateRecordTexts();
+
+      finalScore.textContent = "Skóre: " + score;
+      finalRecord.textContent = "Rekord: " + record;
+
+      endScreen.classList.remove("hidden");
+      player.src = "player-stoji.png";
     }
 
     setInterval(() => {
@@ -247,12 +355,33 @@
     document.addEventListener("keydown", e => {
       if (e.code === "Space") {
         e.preventDefault();
-        startGame();
+
+        if (!startScreen.classList.contains("hidden")) {
+          startGame();
+        } else if (!endScreen.classList.contains("hidden")) {
+          startGame();
+        } else {
+          jump();
+        }
       }
     });
 
-    document.addEventListener("click", startGame);
-    document.addEventListener("touchstart", startGame);
+    game.addEventListener("click", () => {
+      if (!startScreen.classList.contains("hidden")) return;
+      if (!endScreen.classList.contains("hidden")) return;
+      jump();
+    });
+
+    game.addEventListener("touchstart", e => {
+      e.preventDefault();
+
+      if (!startScreen.classList.contains("hidden")) return;
+      if (!endScreen.classList.contains("hidden")) return;
+      jump();
+    });
+
+    startButton.addEventListener("click", startGame);
+    restartButton.addEventListener("click", startGame);
   </script>
 </body>
 </html>
