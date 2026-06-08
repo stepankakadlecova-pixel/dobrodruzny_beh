@@ -248,8 +248,8 @@
     let countdownTimer = null;
     let animationFrame = null;
 
-    const gravity = 0.5;
-    const jumpPower = 11;
+    const gravity = 0.56;
+    const jumpPower = 8;
 
     const runImages = [
       "player-beh1.png",
@@ -309,9 +309,8 @@
       clearInterval(countdownTimer);
       cancelAnimationFrame(animationFrame);
 
-      music.currentTime = 0;
-      music.volume = 0.35;
-      music.play().catch(() => {});
+     music.volume = 0.35;
+music.play().catch(() => {});
 
       spawnObjects();
       gameLoop();
