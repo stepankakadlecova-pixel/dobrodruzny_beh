@@ -220,6 +220,13 @@
     const player = document.getElementById("player");
     const music = document.getElementById("bgMusic");
 
+    music.loop = true;
+
+music.addEventListener("ended", () => {
+    music.currentTime = 0;
+    music.play();
+});
+
     const scoreText = document.getElementById("scoreText");
     const timeText = document.getElementById("timeText");
     const recordText = document.getElementById("recordText");
