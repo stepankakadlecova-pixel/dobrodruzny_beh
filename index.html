@@ -249,12 +249,13 @@ music.addEventListener("ended", () => {
     let isJumping = false;
     let playerBottom = 18;
     let velocity = 0;
-    let gameSpeed = 5;
+    let gameSpeed = window.innerWidth < 700 ? 5 : 3.5;
 
     let spawnTimer = null;
     let countdownTimer = null;
     let animationFrame = null;
 
+    
     const gravity = 0.8;
     const jumpPower = 11;
 
