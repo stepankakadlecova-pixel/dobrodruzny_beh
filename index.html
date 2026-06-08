@@ -109,12 +109,20 @@
     }
 
     .hidden { display: none !important; }
+
+    #logo{
+    position:absolute;
+    top:15px;
+    right:15px;
+    width:min(20vw,180px);
+    z-index:15;
+}
   </style>
 </head>
 
 <body>
   <div id="game">
-
+<img id="logo" src="logo.png" alt="Pro malé dobrodruhy">
     <div id="hud">
       <div class="hud-box" id="scoreText">Skóre: 0</div>
       <div class="hud-box" id="timeText">Čas: 60</div>
