@@ -266,28 +266,31 @@ const jumpPower = isMobile ? 11 : 12;
       "player-beh2.png"
     ];
 
-    const collectImages = [
-      "kompas.png",
-      "mapa.png",
-      "baterka.png",
-      "dalekohled.png",
-      "lahev.png",
-      "lekarnicka.png",
-      "svacina.png",
-      "stan.png",
-      "fotoaparat.png"
-    ];
+   const collectImages = [
+  { src: "kompas.png", points: 5, type: "normal" },
+  { src: "mapa.png", points: 5, type: "normal" },
+  { src: "baterka.png", points: 5, type: "normal" },
+  { src: "dalekohled.png", points: 5, type: "normal" },
+  { src: "lahev.png", points: 5, type: "normal" },
+  { src: "lekarnicka.png", points: 5, type: "normal" },
+  { src: "svacina.png", points: 5, type: "normal" },
+  { src: "stan.png", points: 5, type: "normal" },
+  { src: "fotoaparat.png", points: 5, type: "normal" },
+  { src: "stopa.png", points: 10, type: "normal" },
+  { src: "hvezda.png", points: 0, type: "double" }
+];
 
-    const obstacleImages = [
-      "ul.png",
-      "bourkovy_mrak.png",
-      "blato.png",
-      "strom.png",
-      "most.png",
-      "jedovata_houba.png",
-      "medvedi-trus.png",
-      "skala.png"
-    ];
+   const obstacleImages = [
+  { src: "ul.png", points: -5, type: "obstacle" },
+  { src: "bourkovy_mrak.png", points: -5, type: "obstacle" },
+  { src: "blato.png", points: -5, type: "obstacle" },
+  { src: "strom.png", points: -5, type: "obstacle" },
+  { src: "most.png", points: -5, type: "obstacle" },
+  { src: "jedovata_houba.png", points: -5, type: "obstacle" },
+  { src: "medvedi-trus.png", points: -5, type: "obstacle" },
+  { src: "skala.png", points: -5, type: "obstacle" },
+  { src: "ohen.png", points: -20, type: "fire" }
+];
 
     updateRecordTexts();
 
@@ -367,21 +370,35 @@ music.play().catch(() => {});
         left -= gameSpeed;
         obj.style.left = left + "px";
 
-        if (left < -160) {
-          obj.remove();
-          return;
-        }
+       // bonus za přeskočení překážky
+if (
+  obj.classList.contains("obstacle") &&
+  obj.dataset.passed === "false" &&
+  left + obj.offsetWidth < player.offsetLeft
+) {
+  score += 2;
+  obj.dataset.passed = "true";
+  scoreText.textContent = "Skóre: " + score;
+}
 
-        if (checkCollision(player, obj)) {
-          if (obj.classList.contains("item")) {
-            score += 5;
-          } else {
-            score -= 5;
-          }
+if (left < -160) {
+  obj.remove();
+  return;
+}
 
-          scoreText.textContent = "Skóre: " + score;
-          obj.remove();
-        }
+if (checkCollision(player, obj)) {
+  const type = obj.dataset.type;
+  const points = Number(obj.dataset.points);
+
+  if (type === "double") {
+    score *= 2;
+  } else {
+    score += points;
+  }
+
+  scoreText.textContent = "Skóre: " + score;
+  obj.remove();
+}
       });
 
       animationFrame = requestAnimationFrame(gameLoop);
@@ -393,13 +410,20 @@ music.play().catch(() => {});
       const isItem = Math.random() > 0.45;
       const img = document.createElement("img");
 
-      if (isItem) {
-        img.className = "item";
-        img.src = collectImages[Math.floor(Math.random() * collectImages.length)];
-      } else {
-        img.className = "obstacle";
-        img.src = obstacleImages[Math.floor(Math.random() * obstacleImages.length)];
-      }
+      let selected;
+
+if (isItem) {
+  selected = collectImages[Math.floor(Math.random() * collectImages.length)];
+  img.className = "item";
+} else {
+  selected = obstacleImages[Math.floor(Math.random() * obstacleImages.length)];
+  img.className = "obstacle";
+}
+
+img.src = selected.src;
+img.dataset.points = selected.points;
+img.dataset.type = selected.type;
+img.dataset.passed = "false";
 
       img.style.left = window.innerWidth + "px";
       game.appendChild(img);
