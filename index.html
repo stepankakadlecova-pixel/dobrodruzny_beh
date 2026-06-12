@@ -28,22 +28,21 @@
       width: 100vw;
       height: 100dvh;
       overflow: hidden;
-      #game {
-  background-image: url("pozadi.png");
-  background-size: cover;
-  background-position: center bottom;
+      background-image: url("pozadi.png");
+      background-size: cover;
+      background-position: center bottom;
+      background-repeat: no-repeat;
     }
-       }
 
     #hud {
       position: fixed;
       top: 16px;
-      right: 16px;
+      left: 16px;
       z-index: 50;
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
-      max-width: 65vw;
+      max-width: 70vw;
     }
 
     .hud-box {
@@ -56,13 +55,13 @@
       border: 2px solid rgba(0,0,0,0.15);
     }
 
-  #logoSmall {
-  position: fixed;
-  top: 5px;
-  right: 15px;
-  width: 115px;
-  z-index: 50;
-}
+    #logoSmall {
+      position: fixed;
+      top: 12px;
+      right: 14px;
+      width: 110px;
+      z-index: 50;
+    }
 
     #player {
       position: absolute;
@@ -157,8 +156,8 @@
 
     @media (max-width: 700px) {
       #hud {
-        top: 80px;
-        right: 12px;
+        top: 92px;
+        left: 12px;
         flex-direction: column;
         gap: 6px;
         max-width: 180px;
@@ -170,9 +169,9 @@
       }
 
       #logoSmall {
-        top: 5px;
-        right: 15px;
-        width: 115px;
+        top: 18px;
+        right: 14px;
+        width: 105px;
       }
 
       #player {
@@ -189,7 +188,7 @@
       }
 
       #endScreen .panel {
-        transform: translateY(-70px);
+        transform: translateY(-60px);
       }
 
       .panel {
@@ -232,9 +231,15 @@
     <div id="startScreen">
       <div class="panel">
         <img class="startLogo" src="logo.png" alt="Pro malé dobrodruhy">
-        <p>Pochytej si věci, které potřebuješ na výpravu,<br>a vyhni se překážkám!</p>
+
+        <p>
+          Pochytej si věci, které potřebuješ na výpravu,<br>
+          a vyhni se překážkám!
+        </p>
+
         <p>⏱️ Máš 60 sekund.</p>
         <p id="mainRecord">Rekord: 0</p>
+
         <button id="startButton" type="button">START</button>
       </div>
     </div>
@@ -242,12 +247,15 @@
     <div id="endScreen" class="hidden">
       <div class="panel">
         <img class="startLogo" src="logo.png" alt="Pro malé dobrodruhy">
+
         <h1>Konec výpravy!</h1>
         <p id="finalScore">Skóre: 0</p>
         <p id="finalRecord">Rekord: 0</p>
 
         <button id="restartButton" type="button">HRÁT ZNOVU</button>
+
         <br><br>
+
         <button id="shopButton" type="button">
           🎒 SKOČ I TY PRO SVOU VÝBAVU
         </button>
@@ -284,7 +292,7 @@
 
     let isGameRunning = false;
     let isJumping = false;
-    let playerBottom = isMobile ? 18 : 18;
+    let playerBottom = 18;
     let velocity = 0;
 
     let gameSpeed = isMobile ? 5 : 2.5;
@@ -292,11 +300,10 @@
     let spawnTimer = null;
     let countdownTimer = null;
     let animationFrame = null;
-    let bgX = 0;
 
     const gravity = isMobile ? 0.8 : 0.8;
     const jumpPower = isMobile ? 11 : 12;
-    const groundLevel = isMobile ? 18 : 18;
+    const groundLevel = 18;
 
     const runImages = [
       "player-beh1.png",
@@ -330,6 +337,7 @@
     ];
 
     music.loop = true;
+
     music.addEventListener("ended", () => {
       music.currentTime = 0;
       music.play();
@@ -345,7 +353,6 @@
     function startGame() {
       score = 0;
       timeLeft = 60;
-      bgX = 0;
       isGameRunning = true;
       isJumping = false;
       playerBottom = groundLevel;
@@ -353,6 +360,7 @@
 
       scoreText.textContent = "Skóre: 0";
       timeText.textContent = "Čas: 60";
+
       player.src = "player-stoji.png";
       player.style.bottom = playerBottom + "vh";
 
@@ -393,12 +401,8 @@
       }
     }
 
-   function gameLoop() {
-  if (!isGameRunning) return;
-
-  bgX -= 0.5;
-  game.style.backgroundPosition =
-      bgX + "px center bottom";
+    function gameLoop() {
+      if (!isGameRunning) return;
 
       if (isJumping) {
         playerBottom += velocity * 0.6;
