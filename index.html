@@ -414,8 +414,8 @@ const jumpPower = isMobile ? 11 : 12;
       scoreText.textContent = "Skóre: 0";
       timeText.textContent = "Čas: 60";
 
-      player.src = "player-stoji.png";
-      player.style.bottom = "18vh";
+     playerBottom = isMobile ? 24 : 18;
+player.style.bottom = playerBottom + "vh";
 
       document.querySelectorAll(".item, .obstacle").forEach(obj => obj.remove());
 
@@ -460,9 +460,10 @@ music.play().catch(() => {});
       if (isJumping) {
         playerBottom += velocity * 0.6;
         velocity -= gravity;
+const groundLevel = isMobile ? 24 : 18;
 
-        if (playerBottom <= 18) {
-          playerBottom = 18;
+if (playerBottom <= groundLevel) {
+  playerBottom = groundLevel;
           isJumping = false;
         }
 
