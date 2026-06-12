@@ -31,27 +31,26 @@
       background-position: center bottom;
     }
 
-    #logoSmall {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      width: min(22vw, 180px);
-      z-index: 12;
-      background: rgba(255,255,255,0.55);
-      border-radius: 12px;
-      padding: 6px;
-    }
+   @media (max-width: 700px) {
+  #hud {
+    top: 150px;
+    left: 12px;
+    max-width: 65vw;
+    gap: 6px;
+  }
 
-    #hud {
-      position: absolute;
-      top: 16px;
-      left: 16px;
-      z-index: 10;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      max-width: 65vw;
-    }
+  .hud-box {
+    font-size: 18px;
+    padding: 7px 10px;
+  }
+
+  #logoSmall {
+    width: 115px;
+    top: 150px;
+    right: 12px;
+    bottom: auto;
+  }
+}
 
     .hud-box {
       font-size: clamp(16px, 3vw, 28px);
