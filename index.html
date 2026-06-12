@@ -2,11 +2,11 @@
 <html lang="cs">
 <head>
   <meta charset="UTF-8">
- <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Stopařská akademie</title>
 
-<link rel="icon" type="image/png" href="favicon.png">
-  
+  <link rel="icon" type="image/png" href="favicon.png">
+
   <style>
     * {
       box-sizing: border-box;
@@ -14,7 +14,9 @@
       padding: 0;
     }
 
-    body {
+    html, body {
+      width: 100%;
+      height: 100%;
       overflow: hidden;
       font-family: Arial, sans-serif;
       background: #cdefff;
@@ -24,36 +26,43 @@
     #game {
       position: relative;
       width: 100vw;
-      height: 100vh;
+      height: 100dvh;
       overflow: hidden;
       background-image: url("pozadi.png");
       background-size: cover;
       background-position: center bottom;
     }
 
-@media (max-width: 700px) {
-  #hud {
-    flex-direction: column;
-    top: 300px;
-  }
-
-
-  .hud-box {
-    font-size: 18px;
-    padding: 7px 10px;
-  }
-
-
-}
+    #hud {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      z-index: 50;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      max-width: 65vw;
+    }
 
     .hud-box {
       font-size: clamp(16px, 3vw, 28px);
       font-weight: bold;
       color: #111;
-      background: rgba(255,255,255,0.82);
+      background: rgba(255,255,255,0.85);
       padding: 8px 12px;
       border-radius: 12px;
       border: 2px solid rgba(0,0,0,0.15);
+    }
+
+    #logoSmall {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      width: min(22vw, 180px);
+      z-index: 50;
+      background: rgba(255,255,255,0.55);
+      border-radius: 12px;
+      padding: 6px;
     }
 
     #player {
@@ -72,18 +81,18 @@
     }
 
     .item {
-      bottom: 24vh;
+      bottom: 38vh;
     }
 
     .obstacle {
-      bottom: 25vh;
+      bottom: 19vh;
     }
 
     #startScreen,
     #endScreen {
       position: absolute;
       inset: 0;
-      z-index: 30;
+      z-index: 100;
       background: rgba(255,255,255,0.84);
       display: flex;
       align-items: center;
@@ -100,11 +109,10 @@
       border-radius: 24px;
       padding: 26px;
       box-shadow: 0 8px 0 rgba(0,0,0,0.25);
-      pointer-events: auto;
     }
 
     .startLogo {
-      width: min(70vw, 90px);
+      width: min(70vw, 120px);
       margin-bottom: 14px;
     }
 
@@ -132,7 +140,6 @@
       color: white;
       cursor: pointer;
       box-shadow: 0 5px 0 #111;
-      pointer-events: auto;
     }
 
     button:active {
@@ -140,138 +147,78 @@
       box-shadow: 0 1px 0 #111;
     }
 
+    #shopButton {
+      background: #f26a13;
+      max-width: 100%;
+    }
+
     .hidden {
       display: none !important;
     }
 
-  @media (max-width: 700px) {
-  #logoSmall {
-    width: 120px;
-    top: 105px;
-    right: 12px;
-    bottom: auto;
-  }
+    @media (max-width: 700px) {
+      #hud {
+        top: 155px;
+        left: 12px;
+        flex-direction: column;
+        gap: 6px;
+        max-width: 180px;
+      }
 
-  #hud {
-    top: 105px;
-    left: 12px;
-    max-width: 70vw;
-  }
-}
+      .hud-box {
+        font-size: 18px;
+        padding: 7px 10px;
+      }
+
+      #logoSmall {
+        top: 155px;
+        right: 12px;
+        width: 115px;
+      }
+
+      #player {
+        bottom: 18vh;
+        width: 100px;
+      }
+
+      .obstacle {
+        bottom: 19vh;
+      }
 
       .item {
-        bottom: 41vh;
+        bottom: 38vh;
+      }
+
+      #endScreen .panel {
+        transform: translateY(-70px);
+      }
+
+      .panel {
+        padding: 16px;
+      }
+
+      h1 {
+        font-size: 44px;
+      }
+
+      p {
+        font-size: 21px;
+      }
+
+      button {
+        font-size: 22px;
+        padding: 10px 18px;
       }
     }
-    html, body {
-  width: 100%;
-  min-height: 100%;
-  overflow-x: hidden;
-}
-
-body {
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
-
-  h1 {
-    font-size: 46px;
-    margin: 4px 0 8px;
-  }
-
-  .panel,
-  .choice {
-    padding: 14px;
-    margin: 10px auto;
-    border-radius: 20px;
-  }
-
-  p,
-  .stats {
-    font-size: 21px;
-  }
-
-  button {
-    font-size: 22px;
-    padding: 10px 18px;
-    margin: 6px;
-  }
-
-  .topbar {
-    position: sticky;
-    top: env(safe-area-inset-top);
-    z-index: 20;
-    font-size: 20px;
-    gap: 8px;
-    padding: 8px;
-    margin-bottom: 12px;
-    border-radius: 0 0 18px 18px;
-  }
-
-  .players {
-    margin-bottom: 10px;
-  }
-
-  .player-box {
-    font-size: 18px;
-    padding: 7px 10px;
-  }
-
-  .board {
-    width: 100%;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    margin: 12px auto 24px;
-  }
-
-  .card {
-    min-height: 112px;
-    border-width: 3px;
-    border-radius: 16px;
-    padding: 6px;
-  }
-
-  .card img {
-    height: 82px;
-  }
-
-  .card-back {
-    font-size: 56px;
-  }
-}
-
-@media (max-width: 430px) {
-  .board {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .card {
-    min-height: 104px;
-  }
-
-  .card img {
-    height: 76px;
-  }
-
-  .topbar {
-    font-size: 18px;
-  }
-}
-    @media (max-width: 700px) {
-  #endScreen .panel {
-    transform: translateY(-60px);
-  }
-}
   </style>
 </head>
 
 <body>
   <div id="game">
 
-   <audio id="bgMusic" loop>
-   <source src="hudba.mp3" type="audio/mpeg">
-</audio>
+    <audio id="bgMusic" loop>
+      <source src="hudba.mp3" type="audio/mpeg">
+    </audio>
 
     <img id="logoSmall" src="logo.png" alt="Pro malé dobrodruhy">
 
@@ -286,15 +233,9 @@ body {
     <div id="startScreen">
       <div class="panel">
         <img class="startLogo" src="logo.png" alt="Pro malé dobrodruhy">
-
-        <p>
-          Pochytej si věci, které potřebuješ na výpravu,<br>
-          a vyhni se překážkám!
-        </p>
-
+        <p>Pochytej si věci, které potřebuješ na výpravu,<br>a vyhni se překážkám!</p>
         <p>⏱️ Máš 60 sekund.</p>
         <p id="mainRecord">Rekord: 0</p>
-
         <button id="startButton" type="button">START</button>
       </div>
     </div>
@@ -302,21 +243,15 @@ body {
     <div id="endScreen" class="hidden">
       <div class="panel">
         <img class="startLogo" src="logo.png" alt="Pro malé dobrodruhy">
-
         <h1>Konec výpravy!</h1>
         <p id="finalScore">Skóre: 0</p>
         <p id="finalRecord">Rekord: 0</p>
 
         <button id="restartButton" type="button">HRÁT ZNOVU</button>
-
-<br><br>
-
-<button
-  id="shopButton"
-  type="button"
-  onclick="window.open('https://www.promaledobrodruhy.cz','_blank')">
-  🎒 SKOČ I TY PRO SVOU VÝBAVU
-</button>
+        <br><br>
+        <button id="shopButton" type="button">
+          🎒 SKOČ I TY PRO SVOU VÝBAVU
+        </button>
       </div>
     </div>
 
@@ -326,13 +261,6 @@ body {
     const game = document.getElementById("game");
     const player = document.getElementById("player");
     const music = document.getElementById("bgMusic");
-
-    music.loop = true;
-
-music.addEventListener("ended", () => {
-    music.currentTime = 0;
-    music.play();
-});
 
     const scoreText = document.getElementById("scoreText");
     const timeText = document.getElementById("timeText");
@@ -347,6 +275,9 @@ music.addEventListener("ended", () => {
 
     const startButton = document.getElementById("startButton");
     const restartButton = document.getElementById("restartButton");
+    const shopButton = document.getElementById("shopButton");
+
+    const isMobile = window.innerWidth < 700;
 
     let score = 0;
     let timeLeft = 60;
@@ -354,50 +285,55 @@ music.addEventListener("ended", () => {
 
     let isGameRunning = false;
     let isJumping = false;
-    let playerBottom = 18;
+    let playerBottom = isMobile ? 18 : 18;
     let velocity = 0;
-    let gameSpeed = window.innerWidth < 700 ? 5 : 2.5;
+
+    let gameSpeed = isMobile ? 5 : 2.5;
 
     let spawnTimer = null;
     let countdownTimer = null;
     let animationFrame = null;
 
-    
-    const isMobile = window.innerWidth < 700;
-
-const gravity = isMobile ? 0.8 : 0.8;
-const jumpPower = isMobile ? 11 : 12;
+    const gravity = isMobile ? 0.8 : 0.8;
+    const jumpPower = isMobile ? 11 : 12;
+    const groundLevel = isMobile ? 18 : 18;
 
     const runImages = [
       "player-beh1.png",
       "player-beh2.png"
     ];
 
-   const collectImages = [
-  { src: "kompas.png", points: 5, type: "normal" },
-  { src: "mapa.png", points: 5, type: "normal" },
-  { src: "baterka.png", points: 5, type: "normal" },
-  { src: "dalekohled.png", points: 5, type: "normal" },
-  { src: "lahev.png", points: 5, type: "normal" },
-  { src: "lekarnicka.png", points: 5, type: "normal" },
-  { src: "svacina.png", points: 5, type: "normal" },
-  { src: "stan.png", points: 5, type: "normal" },
-  { src: "fotoaparat.png", points: 5, type: "normal" },
-  { src: "stopa.png", points: 10, type: "normal" },
-  { src: "hvezda.png", points: 0, type: "double" }
-];
+    const collectImages = [
+      { src: "kompas.png", points: 5, type: "normal" },
+      { src: "mapa.png", points: 5, type: "normal" },
+      { src: "baterka.png", points: 5, type: "normal" },
+      { src: "dalekohled.png", points: 5, type: "normal" },
+      { src: "lahev.png", points: 5, type: "normal" },
+      { src: "lekarnicka.png", points: 5, type: "normal" },
+      { src: "svacina.png", points: 5, type: "normal" },
+      { src: "stan.png", points: 5, type: "normal" },
+      { src: "fotoaparat.png", points: 5, type: "normal" },
+      { src: "stopa.png", points: 10, type: "normal" },
+      { src: "hvezda.png", points: 0, type: "double" }
+    ];
 
-   const obstacleImages = [
-  { src: "ul.png", points: -5, type: "obstacle" },
-  { src: "bourkovy_mrak.png", points: -5, type: "obstacle" },
-  { src: "blato.png", points: -5, type: "obstacle" },
-  { src: "strom.png", points: -5, type: "obstacle" },
-  { src: "most.png", points: -5, type: "obstacle" },
-  { src: "jedovata_houba.png", points: -5, type: "obstacle" },
-  { src: "medvedi-trus.png", points: -5, type: "obstacle" },
-  { src: "skala.png", points: -5, type: "obstacle" },
-  { src: "ohen.png", points: -20, type: "fire" }
-];
+    const obstacleImages = [
+      { src: "ul.png", points: -5, type: "obstacle" },
+      { src: "bourkovy_mrak.png", points: -5, type: "obstacle" },
+      { src: "blato.png", points: -5, type: "obstacle" },
+      { src: "strom.png", points: -5, type: "obstacle" },
+      { src: "most.png", points: -5, type: "obstacle" },
+      { src: "jedovata_houba.png", points: -5, type: "obstacle" },
+      { src: "medvedi-trus.png", points: -5, type: "obstacle" },
+      { src: "skala.png", points: -5, type: "obstacle" },
+      { src: "ohen.png", points: -20, type: "fire" }
+    ];
+
+    music.loop = true;
+    music.addEventListener("ended", () => {
+      music.currentTime = 0;
+      music.play();
+    });
 
     updateRecordTexts();
 
@@ -411,14 +347,13 @@ const jumpPower = isMobile ? 11 : 12;
       timeLeft = 60;
       isGameRunning = true;
       isJumping = false;
-      playerBottom = 18;
+      playerBottom = groundLevel;
       velocity = 0;
 
       scoreText.textContent = "Skóre: 0";
       timeText.textContent = "Čas: 60";
-
-     playerBottom = isMobile ? 24 : 18;
-player.style.bottom = playerBottom + "vh";
+      player.src = "player-stoji.png";
+      player.style.bottom = playerBottom + "vh";
 
       document.querySelectorAll(".item, .obstacle").forEach(obj => obj.remove());
 
@@ -429,8 +364,8 @@ player.style.bottom = playerBottom + "vh";
       clearInterval(countdownTimer);
       cancelAnimationFrame(animationFrame);
 
-     music.volume = 0.35;
-music.play().catch(() => {});
+      music.volume = 0.35;
+      music.play().catch(() => {});
 
       spawnObjects();
       gameLoop();
@@ -463,10 +398,9 @@ music.play().catch(() => {});
       if (isJumping) {
         playerBottom += velocity * 0.6;
         velocity -= gravity;
-const groundLevel = isMobile ? 24 : 18;
 
-if (playerBottom <= groundLevel) {
-  playerBottom = groundLevel;
+        if (playerBottom <= groundLevel) {
+          playerBottom = groundLevel;
           isJumping = false;
         }
 
@@ -478,35 +412,34 @@ if (playerBottom <= groundLevel) {
         left -= gameSpeed;
         obj.style.left = left + "px";
 
-       // bonus za přeskočení překážky
-if (
-  obj.classList.contains("obstacle") &&
-  obj.dataset.passed === "false" &&
-  left + obj.offsetWidth < player.offsetLeft
-) {
-  score += 2;
-  obj.dataset.passed = "true";
-  scoreText.textContent = "Skóre: " + score;
-}
+        if (
+          obj.classList.contains("obstacle") &&
+          obj.dataset.passed === "false" &&
+          left + obj.offsetWidth < player.offsetLeft
+        ) {
+          score += 2;
+          obj.dataset.passed = "true";
+          scoreText.textContent = "Skóre: " + score;
+        }
 
-if (left < -160) {
-  obj.remove();
-  return;
-}
+        if (left < -160) {
+          obj.remove();
+          return;
+        }
 
-if (checkCollision(player, obj)) {
-  const type = obj.dataset.type;
-  const points = Number(obj.dataset.points);
+        if (checkCollision(player, obj)) {
+          const type = obj.dataset.type;
+          const points = Number(obj.dataset.points);
 
-  if (type === "double") {
-    score *= 2;
-  } else {
-    score += points;
-  }
+          if (type === "double") {
+            score *= 2;
+          } else {
+            score += points;
+          }
 
-  scoreText.textContent = "Skóre: " + score;
-  obj.remove();
-}
+          scoreText.textContent = "Skóre: " + score;
+          obj.remove();
+        }
       });
 
       animationFrame = requestAnimationFrame(gameLoop);
@@ -517,23 +450,22 @@ if (checkCollision(player, obj)) {
 
       const isItem = Math.random() > 0.45;
       const img = document.createElement("img");
-
       let selected;
 
-if (isItem) {
-  selected = collectImages[Math.floor(Math.random() * collectImages.length)];
-  img.className = "item";
-} else {
-  selected = obstacleImages[Math.floor(Math.random() * obstacleImages.length)];
-  img.className = "obstacle";
-}
+      if (isItem) {
+        selected = collectImages[Math.floor(Math.random() * collectImages.length)];
+        img.className = "item";
+      } else {
+        selected = obstacleImages[Math.floor(Math.random() * obstacleImages.length)];
+        img.className = "obstacle";
+      }
 
-img.src = selected.src;
-img.dataset.points = selected.points;
-img.dataset.type = selected.type;
-img.dataset.passed = "false";
-
+      img.src = selected.src;
+      img.dataset.points = selected.points;
+      img.dataset.type = selected.type;
+      img.dataset.passed = "false";
       img.style.left = window.innerWidth + "px";
+
       game.appendChild(img);
 
       const delay = Math.random() * 1200 + 850;
@@ -543,7 +475,7 @@ img.dataset.passed = "false";
     function checkCollision(a, b) {
       const r1 = a.getBoundingClientRect();
       const r2 = b.getBoundingClientRect();
-      const padding = window.innerWidth < 700 ? 18 : 32;
+      const padding = isMobile ? 18 : 32;
 
       return !(
         r1.right - padding < r2.left + padding ||
@@ -561,8 +493,6 @@ img.dataset.passed = "false";
       cancelAnimationFrame(animationFrame);
 
       document.querySelectorAll(".item, .obstacle").forEach(obj => obj.remove());
-
-      
 
       if (score > record) {
         record = score;
@@ -600,16 +530,13 @@ img.dataset.passed = "false";
 
     game.addEventListener("click", e => {
       if (e.target.tagName === "BUTTON") return;
-
       if (!startScreen.classList.contains("hidden")) return;
       if (!endScreen.classList.contains("hidden")) return;
-
       jump();
     });
 
     game.addEventListener("touchstart", e => {
       if (e.target.tagName === "BUTTON") return;
-
       e.preventDefault();
 
       if (!startScreen.classList.contains("hidden")) return;
@@ -626,6 +553,11 @@ img.dataset.passed = "false";
     restartButton.addEventListener("click", e => {
       e.stopPropagation();
       startGame();
+    });
+
+    shopButton.addEventListener("click", e => {
+      e.stopPropagation();
+      window.open("https://www.promaledobrodruhy.cz", "_blank");
     });
   </script>
 </body>
