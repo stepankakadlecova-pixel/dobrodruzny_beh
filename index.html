@@ -290,6 +290,7 @@
     let spawnTimer = null;
     let countdownTimer = null;
     let animationFrame = null;
+    let bgX = 0;
 
     const gravity = isMobile ? 0.8 : 0.8;
     const jumpPower = isMobile ? 11 : 12;
@@ -389,8 +390,12 @@
       }
     }
 
-    function gameLoop() {
-      if (!isGameRunning) return;
+   function gameLoop() {
+  if (!isGameRunning) return;
+
+  bgX -= 0.5;
+  game.style.backgroundPosition =
+      bgX + "px center bottom";
 
       if (isJumping) {
         playerBottom += velocity * 0.6;
