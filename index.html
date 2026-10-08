@@ -28,12 +28,36 @@
       width: 100vw;
       height: 100dvh;
       overflow: hidden;
-      background-image: url("pozadi.png");
-      background-size: cover;
-      background-position: center bottom;
-      background-repeat: no-repeat;
+      background: linear-gradient(#9edafa, #e5f6ff 65%, #eaf9ff);
+      isolation: isolate;
     }
 
+    /* The landscape moves independently; the sun remains fixed in the sky. */
+    #landscape {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background-image: url("pozadi.png");
+      background-size: auto 100%;
+      background-repeat: repeat-x;
+      background-position: 0 bottom;
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, transparent 18%, black 45%);
+      mask-image: linear-gradient(to bottom, transparent 0%, transparent 18%, black 45%);
+      will-change: background-position;
+    }
+    #sun {
+      position: absolute;
+      top: 9%;
+      left: 18%;
+      width: clamp(55px, 8vw, 110px);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: #ffd65b;
+      box-shadow: 0 0 0 10px rgba(255,214,91,.16), 0 0 38px 12px rgba(255,205,71,.45);
+      z-index: 1;
+      pointer-events: none;
+    }
     #hud {
       position: fixed;
       top: 16px;
@@ -220,6 +244,8 @@
 
 <body>
   <div id="game">
+    <div id="landscape" aria-hidden="true"></div>
+    <div id="sun" aria-hidden="true"></div>
 
     <button id="soundButton" type="button" aria-label="Vypnout zvuk" aria-pressed="false">🔊 Zvuk zapnutý</button>
     <audio id="bgMusic" loop>
@@ -287,6 +313,8 @@
 
   <script>
     const game = document.getElementById("game");
+    const landscape = document.getElementById("landscape");
+    let landscapeOffset = 0;
     const tutorialScreen = document.getElementById("tutorialScreen");
     const tutorialPlayButton = document.getElementById("tutorialPlayButton");
     const howToButton = document.getElementById("howToButton");
@@ -403,6 +431,8 @@
       gameEndAt = performance.now() + SETTINGS.duration * 1000;
       lastFrame = 0;
       gamePaused = false;
+      landscapeOffset = 0;
+      landscape.style.backgroundPositionX = "0px";
       isGameRunning = true;
       isJumping = false;
       playerBottom = groundLevel;
@@ -449,6 +479,8 @@
       timeText.textContent = "Čas: " + timeLeft;
       if (now >= gameEndAt) { finishGame(); return; }
       const frameScale = delta * 60;
+      landscapeOffset -= gameSpeed * delta * 0.65;
+      landscape.style.backgroundPositionX = landscapeOffset + "px";
 
       if (isJumping) {
         playerBottom += velocity * 0.6 * frameScale;
