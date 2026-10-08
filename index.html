@@ -292,12 +292,6 @@
       <div class="panel">
         <img class="startLogo" src="logo.png" alt="Pro malé dobrodruhy">
 
-        <p>
-          Pochytej si věci, které potřebuješ na výpravu,<br>
-          a vyhni se překážkám!
-        </p>
-
-        <p>⏱️ Máš 60 sekund.</p>
         <p id="mainRecord">Rekord: 0</p>
 
         <button id="startButton" type="button">START</button>
@@ -650,8 +644,7 @@
         e.preventDefault();
 
         if (!startScreen.classList.contains("hidden")) {
-          startScreen.classList.add("hidden");
-          tutorialScreen.classList.remove("hidden");
+          startGame();
         } else if (!tutorialScreen.classList.contains("hidden")) {
           tutorialScreen.classList.add("hidden");
           startGame();
@@ -703,8 +696,7 @@
     });
     startButton.addEventListener("click", e => {
       e.stopPropagation();
-      startScreen.classList.add("hidden");
-      tutorialScreen.classList.remove("hidden");
+      startGame();
     });
     tutorialPlayButton.addEventListener("click", e => {
       e.stopPropagation();
