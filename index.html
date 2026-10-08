@@ -592,7 +592,8 @@
       scoreText.textContent = "Skóre: 0";
       timeText.textContent = "Čas: " + SETTINGS.duration;
 
-      setPlayerSprite("player-stoji.png");
+      runFrame = 0;
+      setPlayerSprite("player-beh1.png");
       player.style.bottom = playerBottom + "vh";
 
       document.querySelectorAll(".item, .obstacle, .score-pop").forEach(obj => obj.remove());
@@ -787,11 +788,13 @@
       setPlayerSprite("player-stoji.png");
     }
 
+    let runFrame = 0;
     setInterval(() => {
-      if (isGameRunning && !isJumping) {
-        setPlayerSprite(runImages[Math.floor(Math.random() * runImages.length)]);
+      if (isGameRunning && !isJumping && !gamePaused) {
+        runFrame = (runFrame + 1) % runImages.length;
+        setPlayerSprite(runImages[runFrame]);
       }
-    }, 180);
+    }, 150);
 
     document.addEventListener("keydown", e => {
       if (e.code === "Space") {
