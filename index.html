@@ -145,6 +145,11 @@
       box-shadow: 0 1px 0 #111;
     }
 
+    #soundButton { position: fixed; top: 12px; left: 12px; z-index: 120; font-size: 16px; padding: 9px 12px; background: white; color: #111; border-width: 2px; border-radius: 12px; box-shadow: none; }
+    #tutorialScreen { position: absolute; inset: 0; z-index: 110; background: rgba(255,255,255,.93); display: flex; align-items: center; justify-content: center; padding: 20px; text-align: center; }
+    #tutorialScreen .panel { max-height: 92dvh; overflow-y: auto; }
+    #tutorialScreen p { font-size: clamp(16px, 3vw, 23px); }
+    #tutorialScreen h2 { color: #e85d04; font-size: clamp(25px, 5vw, 38px); margin-bottom: 14px; }
     #shopButton {
       background: #f26a13;
       max-width: 100%;
@@ -214,6 +219,7 @@
 <body>
   <div id="game">
 
+    <button id="soundButton" type="button" aria-label="Vypnout zvuk" aria-pressed="false">🔊 Zvuk zapnutý</button>
     <audio id="bgMusic" loop>
       <source src="hudba.mp3" type="audio/mpeg">
     </audio>
@@ -244,6 +250,17 @@
       </div>
     </div>
 
+    <div id="tutorialScreen" class="hidden" role="dialog" aria-modal="true" aria-labelledby="tutorialTitle">
+      <div class="panel">
+        <h2 id="tutorialTitle">🎒 Jak hrát?</h2>
+        <p>🏃 Dobrodruh běží automaticky.</p>
+        <p>👆 Klepni na obrazovku nebo stiskni mezerník a přeskoč překážku.</p>
+        <p>🧭 Sbírej vybavení na výpravu a získávej body.</p>
+        <p>⚠️ Pozor na překážky, ubírají body. ⭐ Hvězda zdvojnásobí skóre.</p>
+        <p>⏱️ Máš 60 sekund. Zkus překonat svůj rekord!</p>
+        <button id="tutorialPlayButton" type="button">ROZUMÍM, HRÁT!</button>
+      </div>
+    </div>
     <div id="endScreen" class="hidden">
       <div class="panel">
         <img class="startLogo" src="logo.png" alt="Pro malé dobrodruhy">
@@ -266,6 +283,23 @@
 
   <script>
     const game = document.getElementById("game");
+    const tutorialScreen = document.getElementById("tutorialScreen");
+    const tutorialPlayButton = document.getElementById("tutorialPlayButton");
+    const soundButton = document.getElementById("soundButton");
+    let soundEnabled = true;
+    try { soundEnabled = localStorage.getItem("dobrodruznyBehSound") !== "off"; } catch (_) {}
+    function syncSound() {
+      music.muted = !soundEnabled;
+      soundButton.textContent = soundEnabled ? "🔊 Zvuk zapnutý" : "🔇 Zvuk vypnutý";
+      soundButton.setAttribute("aria-label", soundEnabled ? "Vypnout zvuk" : "Zapnout zvuk");
+      soundButton.setAttribute("aria-pressed", String(!soundEnabled));
+    }
+    soundButton.addEventListener("click", e => {
+      e.stopPropagation();
+      soundEnabled = !soundEnabled;
+      try { localStorage.setItem("dobrodruznyBehSound", soundEnabled ? "on" : "off"); } catch (_) {}
+      syncSound();
+    });
     const player = document.getElementById("player");
     const music = document.getElementById("bgMusic");
 
@@ -343,6 +377,7 @@
     ];
 
     music.loop = true;
+    syncSound();
 
     music.addEventListener("ended", () => {
       music.currentTime = 0;
@@ -534,6 +569,10 @@
         e.preventDefault();
 
         if (!startScreen.classList.contains("hidden")) {
+          startScreen.classList.add("hidden");
+          tutorialScreen.classList.remove("hidden");
+        } else if (!tutorialScreen.classList.contains("hidden")) {
+          tutorialScreen.classList.add("hidden");
           startGame();
         } else if (!endScreen.classList.contains("hidden")) {
           startGame();
@@ -546,6 +585,7 @@
     game.addEventListener("pointerdown", e => {
       if (e.target.tagName === "BUTTON") return;
       if (!startScreen.classList.contains("hidden")) return;
+      if (!tutorialScreen.classList.contains("hidden")) return;
       if (!endScreen.classList.contains("hidden")) return;
       jump();
     });
@@ -572,6 +612,12 @@
 
     startButton.addEventListener("click", e => {
       e.stopPropagation();
+      startScreen.classList.add("hidden");
+      tutorialScreen.classList.remove("hidden");
+    });
+    tutorialPlayButton.addEventListener("click", e => {
+      e.stopPropagation();
+      tutorialScreen.classList.add("hidden");
       startGame();
     });
 
