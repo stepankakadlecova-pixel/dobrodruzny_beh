@@ -147,6 +147,8 @@
 
     #soundButton { position: fixed; top: 12px; left: 12px; z-index: 120; font-size: 16px; padding: 9px 12px; background: white; color: #111; border-width: 2px; border-radius: 12px; box-shadow: none; }
     #tutorialScreen { position: absolute; inset: 0; z-index: 110; background: rgba(255,255,255,.93); display: flex; align-items: center; justify-content: center; padding: 20px; text-align: center; }
+    #howToButton { margin-top: 14px; background: white; color: #111; font-size: clamp(18px, 3vw, 24px); }
+    #tutorialBackButton { margin-top: 12px; background: white; color: #111; font-size: clamp(16px, 3vw, 22px); }
     #tutorialScreen .panel { max-height: 92dvh; overflow-y: auto; }
     #tutorialScreen p { font-size: clamp(16px, 3vw, 23px); }
     #tutorialScreen h2 { color: #e85d04; font-size: clamp(25px, 5vw, 38px); margin-bottom: 14px; }
@@ -247,6 +249,7 @@
         <p id="mainRecord">Rekord: 0</p>
 
         <button id="startButton" type="button">START</button>
+        <div><button id="howToButton" type="button">❓ JAK HRÁT?</button></div>
       </div>
     </div>
 
@@ -259,6 +262,7 @@
         <p>⚠️ Pozor na překážky, ubírají body. ⭐ Hvězda zdvojnásobí skóre.</p>
         <p>⏱️ Máš 60 sekund. Zkus překonat svůj rekord!</p>
         <button id="tutorialPlayButton" type="button">ROZUMÍM, HRÁT!</button>
+        <div><button id="tutorialBackButton" type="button">← ZPĚT</button></div>
       </div>
     </div>
     <div id="endScreen" class="hidden">
@@ -285,7 +289,10 @@
     const game = document.getElementById("game");
     const tutorialScreen = document.getElementById("tutorialScreen");
     const tutorialPlayButton = document.getElementById("tutorialPlayButton");
+    const howToButton = document.getElementById("howToButton");
+    const tutorialBackButton = document.getElementById("tutorialBackButton");
     const soundButton = document.getElementById("soundButton");
+    const music = document.getElementById("bgMusic");
     let soundEnabled = true;
     try { soundEnabled = localStorage.getItem("dobrodruznyBehSound") !== "off"; } catch (_) {}
     function syncSound() {
@@ -301,7 +308,6 @@
       syncSound();
     });
     const player = document.getElementById("player");
-    const music = document.getElementById("bgMusic");
 
     const scoreText = document.getElementById("scoreText");
     const timeText = document.getElementById("timeText");
@@ -610,6 +616,16 @@
       }
     });
 
+    howToButton.addEventListener("click", e => {
+      e.stopPropagation();
+      startScreen.classList.add("hidden");
+      tutorialScreen.classList.remove("hidden");
+    });
+    tutorialBackButton.addEventListener("click", e => {
+      e.stopPropagation();
+      tutorialScreen.classList.add("hidden");
+      startScreen.classList.remove("hidden");
+    });
     startButton.addEventListener("click", e => {
       e.stopPropagation();
       startScreen.classList.add("hidden");
