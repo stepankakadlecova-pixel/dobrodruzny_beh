@@ -284,18 +284,24 @@
     const restartButton = document.getElementById("restartButton");
     const shopButton = document.getElementById("shopButton");
 
-    const isMobile = window.innerWidth < 700;
+    const isMobile = window.matchMedia("(max-width: 700px)").matches;
+    const SETTINGS = Object.freeze({ duration: 60, speedMobile: 300, speedDesktop: 240, spawnMin: 850, spawnRandom: 1200, gravity: 0.8 });
+    let lastFrame = 0;
+    let gameEndAt = 0;
+    let pausedAt = 0;
+    let gamePaused = false;
 
     let score = 0;
-    let timeLeft = 60;
-    let record = Number(localStorage.getItem("stoparskaAkademieRecord")) || 0;
+    let timeLeft = SETTINGS.duration;
+    let record = 0;
+    try { record = Math.max(0, Number(localStorage.getItem("stoparskaAkademieRecord")) || 0); } catch (_) {}
 
     let isGameRunning = false;
     let isJumping = false;
     let playerBottom = 18;
     let velocity = 0;
 
-    let gameSpeed = isMobile ? 5 : 2.5;
+    let gameSpeed = isMobile ? SETTINGS.speedMobile : SETTINGS.speedDesktop;
 
     let spawnTimer = null;
     let countdownTimer = null;
@@ -352,14 +358,17 @@
 
     function startGame() {
       score = 0;
-      timeLeft = 60;
+      timeLeft = SETTINGS.duration;
+      gameEndAt = performance.now() + SETTINGS.duration * 1000;
+      lastFrame = 0;
+      gamePaused = false;
       isGameRunning = true;
       isJumping = false;
       playerBottom = groundLevel;
       velocity = 0;
 
       scoreText.textContent = "Skóre: 0";
-      timeText.textContent = "Čas: 60";
+      timeText.textContent = "Čas: " + SETTINGS.duration;
 
       player.src = "player-stoji.png";
       player.style.bottom = playerBottom + "vh";
@@ -370,25 +379,15 @@
       endScreen.classList.add("hidden");
 
       clearTimeout(spawnTimer);
-      clearInterval(countdownTimer);
       cancelAnimationFrame(animationFrame);
 
       music.volume = 0.35;
       music.play().catch(() => {});
 
       spawnObjects();
-      gameLoop();
+      animationFrame = requestAnimationFrame(gameLoop);
 
-      countdownTimer = setInterval(() => {
-        if (!isGameRunning) return;
 
-        timeLeft--;
-        timeText.textContent = "Čas: " + timeLeft;
-
-        if (timeLeft <= 0) {
-          finishGame();
-        }
-      }, 1000);
     }
 
     function jump() {
@@ -401,12 +400,18 @@
       }
     }
 
-    function gameLoop() {
-      if (!isGameRunning) return;
+    function gameLoop(now = performance.now()) {
+      if (!isGameRunning || gamePaused) return;
+      const delta = lastFrame ? Math.min((now - lastFrame) / 1000, 0.05) : 1 / 60;
+      lastFrame = now;
+      timeLeft = Math.max(0, Math.ceil((gameEndAt - now) / 1000));
+      timeText.textContent = "Čas: " + timeLeft;
+      if (now >= gameEndAt) { finishGame(); return; }
+      const frameScale = delta * 60;
 
       if (isJumping) {
-        playerBottom += velocity * 0.6;
-        velocity -= gravity;
+        playerBottom += velocity * 0.6 * frameScale;
+        velocity -= gravity * frameScale;
 
         if (playerBottom <= groundLevel) {
           playerBottom = groundLevel;
@@ -418,7 +423,7 @@
 
       document.querySelectorAll(".item, .obstacle").forEach(obj => {
         let left = parseFloat(obj.style.left);
-        left -= gameSpeed;
+        left -= gameSpeed * delta;
         obj.style.left = left + "px";
 
         if (
@@ -477,7 +482,7 @@
 
       game.appendChild(img);
 
-      const delay = Math.random() * 1200 + 850;
+      const delay = Math.random() * SETTINGS.spawnRandom + SETTINGS.spawnMin;
       spawnTimer = setTimeout(spawnObjects, delay);
     }
 
@@ -500,12 +505,13 @@
       clearTimeout(spawnTimer);
       clearInterval(countdownTimer);
       cancelAnimationFrame(animationFrame);
+      music.pause();
 
       document.querySelectorAll(".item, .obstacle").forEach(obj => obj.remove());
 
       if (score > record) {
         record = score;
-        localStorage.setItem("stoparskaAkademieRecord", record);
+        try { localStorage.setItem("stoparskaAkademieRecord", String(record)); } catch (_) {}
       }
 
       updateRecordTexts();
@@ -537,22 +543,32 @@
       }
     });
 
-    game.addEventListener("click", e => {
+    game.addEventListener("pointerdown", e => {
       if (e.target.tagName === "BUTTON") return;
       if (!startScreen.classList.contains("hidden")) return;
       if (!endScreen.classList.contains("hidden")) return;
       jump();
     });
 
-    game.addEventListener("touchstart", e => {
-      if (e.target.tagName === "BUTTON") return;
-      e.preventDefault();
 
-      if (!startScreen.classList.contains("hidden")) return;
-      if (!endScreen.classList.contains("hidden")) return;
 
-      jump();
-    }, { passive: false });
+    document.addEventListener("visibilitychange", () => {
+      if (!isGameRunning) return;
+      if (document.hidden && !gamePaused) {
+        gamePaused = true;
+        pausedAt = performance.now();
+        clearTimeout(spawnTimer);
+        cancelAnimationFrame(animationFrame);
+        music.pause();
+      } else if (!document.hidden && gamePaused) {
+        gameEndAt += performance.now() - pausedAt;
+        gamePaused = false;
+        lastFrame = 0;
+        music.play().catch(() => {});
+        spawnObjects();
+        animationFrame = requestAnimationFrame(gameLoop);
+      }
+    });
 
     startButton.addEventListener("click", e => {
       e.stopPropagation();
