@@ -58,6 +58,32 @@
       z-index: 1;
       pointer-events: none;
     }
+    .score-pop {
+      position: absolute;
+      z-index: 40;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      font: 800 clamp(16px, 2.7vw, 25px)/1 Arial, sans-serif;
+      letter-spacing: .01em;
+      padding: 7px 12px;
+      border: 2px solid #151515;
+      border-radius: 18px;
+      background: #fffdf4;
+      box-shadow: 2px 3px 0 rgba(0,0,0,.18);
+      white-space: nowrap;
+      animation: score-balloon 1.25s ease-out forwards;
+    }
+    .score-pop.gain { color: #278345; }
+    .score-pop.loss { color: #d7473f; }
+    @keyframes score-balloon {
+      0% { opacity: 0; translate: 0 10px; scale: .88; }
+      14% { opacity: 1; scale: 1; }
+      72% { opacity: 1; }
+      100% { opacity: 0; translate: 0 -85px; scale: 1.05; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .score-pop { animation-duration: .4s; }
+    }
     #hud {
       position: fixed;
       top: 16px;
@@ -444,7 +470,7 @@
       player.src = "player-stoji.png";
       player.style.bottom = playerBottom + "vh";
 
-      document.querySelectorAll(".item, .obstacle").forEach(obj => obj.remove());
+      document.querySelectorAll(".item, .obstacle, .score-pop").forEach(obj => obj.remove());
 
       startScreen.classList.add("hidden");
       endScreen.classList.add("hidden");
@@ -469,6 +495,19 @@
         velocity = jumpPower;
         player.src = "player-skok.png";
       }
+    }
+
+    function showScorePop(points, obj, special = false) {
+      const bounds = obj.getBoundingClientRect();
+      const gameBounds = game.getBoundingClientRect();
+      const pop = document.createElement("span");
+      pop.className = "score-pop " + (points < 0 ? "loss" : "gain");
+      pop.textContent = special ? "⭐ ×2" : (points > 0 ? "+" : "") + points;
+      pop.style.left = Math.max(40, Math.min(gameBounds.width - 40, bounds.left - gameBounds.left + bounds.width / 2)) + "px";
+      pop.style.top = Math.max(65, bounds.top - gameBounds.top + bounds.height / 2) + "px";
+      game.appendChild(pop);
+      pop.addEventListener("animationend", () => pop.remove(), { once: true });
+      setTimeout(() => pop.remove(), 1600);
     }
 
     function gameLoop(now = performance.now()) {
@@ -505,6 +544,7 @@
           left + obj.offsetWidth < player.offsetLeft
         ) {
           score += 2;
+          showScorePop(2, obj);
           obj.dataset.passed = "true";
           scoreText.textContent = "Skóre: " + score;
         }
@@ -519,9 +559,12 @@
           const points = Number(obj.dataset.points);
 
           if (type === "double") {
+            const previousScore = score;
             score *= 2;
+            showScorePop(score - previousScore, obj, true);
           } else {
             score += points;
+            showScorePop(points, obj);
           }
 
           scoreText.textContent = "Skóre: " + score;
