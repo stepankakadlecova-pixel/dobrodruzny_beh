@@ -84,6 +84,10 @@
     @media (prefers-reduced-motion: reduce) {
       .score-pop { animation-duration: .4s; }
     }
+    #adventureStatus { position: fixed; left: 12px; bottom: 12px; z-index: 45; display: flex; flex-direction: column; gap: 5px; max-width: min(60vw, 310px); pointer-events: none; }
+    .adventure-chip { background: rgba(255,253,244,.94); border: 2px solid #222; border-radius: 12px; padding: 6px 10px; font-size: clamp(12px,2vw,17px); font-weight: bold; box-shadow: 2px 3px 0 rgba(0,0,0,.14); }
+    #modeTag { margin: 10px auto; font-size: clamp(17px,3vw,22px); font-weight: 800; color: #d65e13; }
+    #achievementText { color: #278345; }
     #hud {
       position: fixed;
       top: 16px;
@@ -287,11 +291,16 @@
     </div>
 
     <img id="player" src="player-stoji.png" alt="Dobrodruh">
+    <div id="adventureStatus" class="hidden" aria-live="polite">
+      <div class="adventure-chip" id="missionText">🎒 Výprava: 0/5</div>
+      <div class="adventure-chip" id="comboText">🔥 Kombo: 0</div>
+    </div>
 
     <div id="startScreen">
       <div class="panel">
         <img class="startLogo" src="logo.png" alt="Pro malé dobrodruhy">
 
+        <div id="modeTag">🎒 REŽIM DOBRODRUH</div>
         <p id="mainRecord">Rekord: 0</p>
 
         <button id="startButton" type="button">START</button>
@@ -306,6 +315,8 @@
         <p>👆 Klepni na obrazovku nebo stiskni mezerník a přeskoč překážku.</p>
         <p>🧭 Sbírej vybavení na výpravu a získávej body.</p>
         <p>⚠️ Pozor na překážky, ubírají body. ⭐ Hvězda zdvojnásobí skóre.</p>
+        <p>🔥 Sbírej předměty bez chyby: 3 za sebou = ×2, 5 = ×3. Náraz kombo přeruší.</p>
+        <p>🎒 Nasbírej alespoň 5 předmětů a splň svou první výpravu!</p>
         <p>⏱️ Máš 60 sekund. Zkus překonat svůj rekord!</p>
         <button id="tutorialPlayButton" type="button">ROZUMÍM, HRÁT!</button>
         <div><button id="tutorialBackButton" type="button">← ZPĚT</button></div>
@@ -318,6 +329,8 @@
         <h1>Konec výpravy!</h1>
         <p id="finalScore">Skóre: 0</p>
         <p id="finalRecord">Rekord: 0</p>
+        <p id="missionResult"></p>
+        <p id="achievementText"></p>
 
         <button id="restartButton" type="button">HRÁT ZNOVU</button>
 
@@ -333,6 +346,27 @@
 
   <script>
     const game = document.getElementById("game");
+    const adventureStatus = document.getElementById("adventureStatus");
+    const missionText = document.getElementById("missionText");
+    const comboText = document.getElementById("comboText");
+    const missionResult = document.getElementById("missionResult");
+    const achievementText = document.getElementById("achievementText");
+    const MISSION_GOAL = 5;
+    let collected = 0;
+    let combo = 0;
+    let bestCombo = 0;
+    let badges = [];
+    try { badges = JSON.parse(localStorage.getItem("dobrodruznyBehBadges") || "[]"); if (!Array.isArray(badges)) badges = []; } catch (_) { badges = []; }
+    function refreshAdventureStatus() {
+      missionText.textContent = "🎒 Výprava: " + Math.min(collected, MISSION_GOAL) + "/" + MISSION_GOAL + (collected >= MISSION_GOAL ? " ✓" : "");
+      comboText.textContent = "🔥 Kombo: " + combo + (combo >= 5 ? " · ×3" : combo >= 3 ? " · ×2" : "");
+    }
+    function awardBadge(id, label) {
+      if (badges.includes(id)) return "";
+      badges.push(id);
+      try { localStorage.setItem("dobrodruznyBehBadges", JSON.stringify(badges)); } catch (_) {}
+      return label;
+    }
     const landscape = document.getElementById("landscape");
     let landscapeOffset = 0;
     const tutorialScreen = document.getElementById("tutorialScreen");
@@ -447,6 +481,11 @@
 
     function startGame() {
       score = 0;
+      collected = 0;
+      combo = 0;
+      bestCombo = 0;
+      refreshAdventureStatus();
+      adventureStatus.classList.remove("hidden");
       timeLeft = SETTINGS.duration;
       gameEndAt = performance.now() + SETTINGS.duration * 1000;
       lastFrame = 0;
@@ -556,10 +595,20 @@
             const previousScore = score;
             score *= 2;
             showScorePop(score - previousScore, obj, true);
+          } else if (points > 0) {
+            combo++;
+            collected++;
+            bestCombo = Math.max(bestCombo, combo);
+            const multiplier = combo >= 5 ? 3 : combo >= 3 ? 2 : 1;
+            const earned = points * multiplier;
+            score += earned;
+            showScorePop(earned, obj);
           } else {
             score += points;
+            combo = 0;
             showScorePop(points, obj);
           }
+          refreshAdventureStatus();
 
           scoreText.textContent = "Skóre: " + score;
           obj.remove();
@@ -626,6 +675,19 @@
 
       updateRecordTexts();
 
+      adventureStatus.classList.add("hidden");
+      const missionDone = collected >= MISSION_GOAL;
+      missionResult.textContent = missionDone ? "🎒 Mise splněna! Nasbíráno " + collected + " předmětů." : "🎒 Mise: " + collected + "/" + MISSION_GOAL + " předmětů.";
+      const earnedBadges = [];
+      if (missionDone) {
+        const badge = awardBadge("firstMission", "🏅 První výprava");
+        if (badge) earnedBadges.push(badge);
+      }
+      if (bestCombo >= 5) {
+        const badge = awardBadge("comboMaster", "🏅 Mistr sběru");
+        if (badge) earnedBadges.push(badge);
+      }
+      achievementText.textContent = earnedBadges.length ? "Nový odznak: " + earnedBadges.join(", ") : "Získané odznaky: " + badges.length;
       finalScore.textContent = "Skóre: " + score;
       finalRecord.textContent = "Rekord: " + record;
 
