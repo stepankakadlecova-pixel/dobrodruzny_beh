@@ -84,6 +84,9 @@
     @media (prefers-reduced-motion: reduce) {
       .score-pop { animation-duration: .4s; }
     }
+    #colorPicker { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin: 12px auto 18px; }
+    .color-choice { width: 42px; height: 42px; padding: 0; border: 3px solid #222; border-radius: 50%; box-shadow: 0 3px 0 #222; background: var(--swatch); }
+    .color-choice[aria-pressed="true"] { outline: 3px solid #fff; outline-offset: -7px; box-shadow: 0 0 0 3px #f26a13; }
     #adventureStatus { position: fixed; left: 12px; bottom: 12px; z-index: 45; display: flex; flex-direction: column; gap: 5px; max-width: min(60vw, 310px); pointer-events: none; }
     .adventure-chip { background: rgba(255,253,244,.94); border: 2px solid #222; border-radius: 12px; padding: 6px 10px; font-size: clamp(12px,2vw,17px); font-weight: bold; box-shadow: 2px 3px 0 rgba(0,0,0,.14); }
     #modeTag { margin: 10px auto; font-size: clamp(17px,3vw,22px); font-weight: 800; color: #d65e13; }
@@ -301,6 +304,8 @@
         <img class="startLogo" src="logo.png" alt="Pro malé dobrodruhy">
 
         <div id="modeTag">🎒 REŽIM DOBRODRUH</div>
+        <div style="font-weight:bold">Vyber si barvu dobrodruha:</div>
+        <div id="colorPicker" role="group" aria-label="Barva dobrodruha"></div>
         <p id="mainRecord">Rekord: 0</p>
 
         <button id="startButton" type="button">START</button>
@@ -390,6 +395,86 @@
       syncSound();
     });
     const player = document.getElementById("player");
+    const colorPicker = document.getElementById("colorPicker");
+    const characterColors = [
+      { id:"orange", label:"Oranžová", hex:"#f26a13", hue:27 },
+      { id:"green", label:"Zelená", hex:"#48a060", hue:136 },
+      { id:"blue", label:"Modrá", hex:"#438dcf", hue:210 },
+      { id:"pink", label:"Růžová", hex:"#d66ca1", hue:330 },
+      { id:"purple", label:"Fialová", hex:"#8862b8", hue:270 }
+    ];
+    let selectedColor = "orange";
+    try { selectedColor = localStorage.getItem("dobrodruznyBehColor") || "orange"; } catch (_) {}
+    if (!characterColors.some(c => c.id === selectedColor)) selectedColor = "orange";
+    let currentSprite = "player-stoji.png";
+    let spriteRequest = 0;
+    const spriteCache = new Map();
+    function setPlayerSprite(filename) {
+      currentSprite = filename;
+      const color = characterColors.find(c => c.id === selectedColor);
+      const request = ++spriteRequest;
+      if (color.id === "orange") { player.src = filename; return; }
+      const key = filename + "|" + color.id;
+      if (spriteCache.has(key)) { player.src = spriteCache.get(key); return; }
+      const image = new Image();
+      image.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = image.naturalWidth;
+        canvas.height = image.naturalHeight;
+        const ctx = canvas.getContext("2d", {willReadFrequently:true});
+        if (!ctx) return;
+        ctx.drawImage(image,0,0);
+        try {
+          const pixels = ctx.getImageData(0,0,canvas.width,canvas.height);
+          const d = pixels.data;
+          for(let i=0;i<d.length;i+=4) {
+            if(d[i+3]<30) continue;
+            const r=d[i]/255,g=d[i+1]/255,b=d[i+2]/255;
+            const max=Math.max(r,g,b),min=Math.min(r,g,b),diff=max-min;
+            if(diff<0.18 || max<0.25) continue;
+            let hue=0;
+            if(max===r) hue=((g-b)/diff)%6;
+            else if(max===g) hue=(b-r)/diff+2;
+            else hue=(r-g)/diff+4;
+            hue=(hue*60+360)%360;
+            const sat=max===0?0:diff/max;
+            if(hue<12 || hue>49 || sat<0.48) continue;
+            const targetHue=color.hue/60;
+            const x=diff*(1-Math.abs(targetHue%2-1));
+            let rr=0,gg=0,bb=0;
+            if(targetHue<1){rr=diff;gg=x;}else if(targetHue<2){rr=x;gg=diff;}
+            else if(targetHue<3){gg=diff;bb=x;}else if(targetHue<4){gg=x;bb=diff;}
+            else if(targetHue<5){rr=x;bb=diff;}else{rr=diff;bb=x;}
+            const m=max-diff;
+            d[i]=Math.round((rr+m)*255);
+            d[i+1]=Math.round((gg+m)*255);
+            d[i+2]=Math.round((bb+m)*255);
+          }
+          ctx.putImageData(pixels,0,0);
+          const url=canvas.toDataURL("image/png");
+          spriteCache.set(key,url);
+          if(request===spriteRequest) player.src=url;
+        } catch (_) { if(request===spriteRequest) player.src=filename; }
+      };
+      image.onerror=()=>{ if(request===spriteRequest) player.src=filename; };
+      image.src=filename;
+    }
+    for(const color of characterColors) {
+      const button=document.createElement("button");
+      button.type="button";
+      button.className="color-choice";
+      button.style.setProperty("--swatch",color.hex);
+      button.setAttribute("aria-label",color.label);
+      button.setAttribute("aria-pressed",String(selectedColor===color.id));
+      button.addEventListener("click",()=>{
+        selectedColor=color.id;
+        try {localStorage.setItem("dobrodruznyBehColor",selectedColor);}catch(_){}
+        for(const choice of colorPicker.children) choice.setAttribute("aria-pressed",String(choice===button));
+        setPlayerSprite(currentSprite);
+      });
+      colorPicker.appendChild(button);
+    }
+    setPlayerSprite(currentSprite);
 
     const scoreText = document.getElementById("scoreText");
     const timeText = document.getElementById("timeText");
@@ -500,7 +585,7 @@
       scoreText.textContent = "Skóre: 0";
       timeText.textContent = "Čas: " + SETTINGS.duration;
 
-      player.src = "player-stoji.png";
+      setPlayerSprite("player-stoji.png");
       player.style.bottom = playerBottom + "vh";
 
       document.querySelectorAll(".item, .obstacle, .score-pop").forEach(obj => obj.remove());
@@ -526,7 +611,7 @@
       if (!isJumping) {
         isJumping = true;
         velocity = jumpPower;
-        player.src = "player-skok.png";
+        setPlayerSprite("player-skok.png");
       }
     }
 
@@ -692,12 +777,12 @@
       finalRecord.textContent = "Rekord: " + record;
 
       endScreen.classList.remove("hidden");
-      player.src = "player-stoji.png";
+      setPlayerSprite("player-stoji.png");
     }
 
     setInterval(() => {
       if (isGameRunning && !isJumping) {
-        player.src = runImages[Math.floor(Math.random() * runImages.length)];
+        setPlayerSprite(runImages[Math.floor(Math.random() * runImages.length)]);
       }
     }, 180);
 
